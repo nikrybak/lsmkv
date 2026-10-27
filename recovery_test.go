@@ -71,8 +71,6 @@ func TestRecoverAfterCrash(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	db.mu.Lock()
-	db.mu.Unlock()
 	dir := crashCopy(t, db)
 	if err := db.Close(); err != nil {
 		t.Fatal(err)

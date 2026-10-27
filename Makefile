@@ -23,6 +23,7 @@ fuzz:
 	$(GO) test -run='^$$' -fuzz=FuzzBlockDecode -fuzztime=$(FUZZTIME) ./internal/sstable
 	$(GO) test -run='^$$' -fuzz=FuzzTableOpen -fuzztime=$(FUZZTIME) ./internal/sstable
 	$(GO) test -run='^$$' -fuzz=FuzzWALReplay -fuzztime=$(FUZZTIME) ./internal/wal
+	$(GO) test -run='^$$' -fuzz=FuzzBatchDecode -fuzztime=$(FUZZTIME) .
 
 vet:
 	$(GO) vet $(PKGS)
