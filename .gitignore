@@ -1,0 +1,19 @@
+# Build output
+/bin/
+/dist/
+*.exe
+*.test
+*.out
+*.prof
+
+# Local data directories created by the CLI and examples
+/data/
+/examples/**/data/
+
+# Fuzz corpora generated locally (seed corpora live under testdata/fuzz)
+/internal/**/testdata/fuzz/**/cache/
+
+# Editors
+.idea/
+.vscode/
+*.swp
