@@ -59,9 +59,10 @@ func (s *skiplist) randomHeight() int {
 // is filled with the rightmost node before target at every level.
 func (s *skiplist) findGE(target []byte, prev *[maxHeight]*node) *node {
 	x := s.head
+	var next *node
 	for level := int(s.height.Load()) - 1; level >= 0; level-- {
 		for {
-			next := x.next[level].Load()
+			next = x.next[level].Load()
 			if next == nil || base.Compare(next.key, target) >= 0 {
 				break
 			}
@@ -71,7 +72,10 @@ func (s *skiplist) findGE(target []byte, prev *[maxHeight]*node) *node {
 			prev[level] = x
 		}
 	}
-	return x.next[0].Load()
+	// Return the node that was compared, not a fresh load of x.next[0]: the
+	// writer may have linked a smaller key after x in the meantime, and
+	// returning it would hand a reader a version newer than it asked for.
+	return next
 }
 
 // insert adds key. Internal keys are unique because every write carries a

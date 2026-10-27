@@ -143,3 +143,46 @@ func BenchmarkAdd(b *testing.B) {
 		m.Add(uint64(i+1), base.KindSet, keys[i&(len(keys)-1)], val)
 	}
 }
+
+func BenchmarkGet(b *testing.B) {
+	m := New(1)
+	const n = 100000
+	keys := make([][]byte, n)
+	for i := range keys {
+		keys[i] = []byte(fmt.Sprintf("key-%010d", i))
+		m.Add(uint64(i+1), base.KindSet, keys[i], keys[i])
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		if _, _, ok := m.Get(keys[i%n], base.MaxSeq); !ok {
+			b.Fatal("missing")
+		}
+	}
+}
+
+// TestGetNeverReturnsNewerVersion pins a reader at a fixed sequence number
+// while the writer keeps adding newer versions of the same key. A search that
+// re-read a next pointer after comparing could return one of them.
+func TestGetNeverReturnsNewerVersion(t *testing.T) {
+	m := New(5)
+	key := []byte("hot")
+	m.Add(1, base.KindSet, key, []byte("1"))
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for seq := uint64(2); seq < 20000; seq++ {
+			m.Add(seq, base.KindSet, key, []byte(fmt.Sprint(seq)))
+		}
+	}()
+	for {
+		select {
+		case <-done:
+			return
+		default:
+		}
+		v, _, ok := m.Get(key, 1)
+		if !ok || string(v) != "1" {
+			t.Fatalf("Get at seq 1 = %q, %v", v, ok)
+		}
+	}
+}
