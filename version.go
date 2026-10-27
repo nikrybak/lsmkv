@@ -3,6 +3,7 @@ package lsmkv
 import (
 	"bytes"
 	"fmt"
+	"maps"
 	"os"
 	"sort"
 	"sync/atomic"
@@ -50,7 +51,7 @@ type version struct {
 }
 
 func newVersion(v *manifest.Version, tables map[uint64]*table) *version {
-	nv := &version{v: v, tables: tables}
+	nv := &version{v: v, tables: maps.Clone(tables)}
 	for _, t := range tables {
 		t.ref()
 	}
